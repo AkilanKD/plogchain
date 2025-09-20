@@ -1,31 +1,32 @@
-// server.js
 const express = require("express");
 const cors = require("cors");
+const { Pool } = require("pg");
 
 const app = express();
 app.use(cors());
+app.use(express.json());
 
-// Example dirtiness data (this would normally come from your DB)
-let trashSpots = [
-  { lat: 37.782, lng: -122.447, score: 1 },
-  { lat: 37.782, lng: -122.445, score: 3 },
-  { lat: 37.782, lng: -122.443, score: 5 },
-];
-
-// API endpoint to get dirtiness data
-app.get("/api/trash", (req, res) => {
-  res.json(trashSpots);
+// Connect to Render Postgres using the DATABASE_URL environment variable
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+  ssl: { rejectUnauthorized: false }
 });
 
-// Example: endpoint to update dirtiness
-app.post("/api/trash/report", express.json(), (req, res) => {
+// GET all trash spots
+app.get("/api/trash", async (req, res) => {
+  const result = await pool.query("SELECT * FROM trash_spots");
+  res.json(result.rows);
+});
+
+// POST new trash report
+app.post("/api/trash/report", async (req, res) => {
   const { lat, lng, score } = req.body;
-  trashSpots.push({ lat, lng, score });
-  res.json({ message: "Report added", data: trashSpots });
+  await pool.query(
+    "INSERT INTO trash_spots (lat, lng, score) VALUES ($1, $2, $3)",
+    [lat, lng, score]
+  );
+  res.json({ message: "Report added" });
 });
 
-const PORT = process.env.PORT || 5000; // Use Render’s port, fallback to 5000 locally
-
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-});
+const PORT = process.env.PORT || 5000;
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
