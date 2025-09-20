@@ -1,14 +1,14 @@
-const express = require("express");
-const cors = require("cors");
-const { Pool } = require("pg");
+import express, { json } from "express";
+import cors from "cors";
+import { Pool } from "pg";
 
 const app = express();
 app.use(cors());
-app.use(express.json());
+app.use(json());
 
 // Connect to Render Postgres using the DATABASE_URL environment variable
 const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
+  connectionString: process.env.DB_URL,
   ssl: { rejectUnauthorized: false }
 });
 
