@@ -1,5 +1,12 @@
 import express, { json } from "express";
 import cors from "cors";
+import {CLEANUPS_POOL, REPORTS_POOL, SPOTS_POOL, USERS_POOL} from "api/api.js";
+
+// Connect to Render Postgres using the DATABASE_URL environment variable
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+  ssl: { rejectUnauthorized: false }
+});
 
 const app = express();
 app.use(cors());
@@ -40,7 +47,7 @@ app.post("/api/trash/report", async (req, res) => {
 
 app.post("/signup", async (req, res) => {
   console.log(req.body)
-  res.json({ message: "Hello World" });
+  res.json({ message: "Sign up processed!" });
 });
 
 const PORT = process.env.PORT || 5000;
