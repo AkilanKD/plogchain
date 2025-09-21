@@ -21,5 +21,10 @@ app.post("/api/trash/report", async (req, res) => {
   res.json({ message: "Report added" });
 });
 
+app.post("/signup", async (req, res) => {
+  console.log(req.body)
+  res.json({ message: "Hello World" });
+});
+
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
