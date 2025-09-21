@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sign Up</title>
+  <style>
+    body { font-family: Arial, sans-serif; background: #f4f4f9; display: flex; justify-content: center; align-items: center; height: 100vh; }
+    .form-box { background: white; padding: 20px; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); width: 300px; }
+    input { width: 100%; padding: 8px; margin: 8px 0; border: 1px solid #ccc; border-radius: 5px; }
+    button { width: 100%; padding: 10px; background: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer; }
+    button:hover { background: #0056b3; }
+  </style>
+</head>
+<body>
+  <div class="form-box">
+    <h2>Sign Up</h2>
+    <form id="signupForm">
+      <input type="text" placeholder="First Name" name="firstName" required>
+      <input type="text" placeholder="Last Name" name="lastName" required>
+      <input type="email" placeholder="Email" name="email" required>
+      <input type="text" placeholder="Login ID" name="username" required>
+      <input type="password" placeholder="Password" name="password" required>
+      <button type="submit">Sign Up</button>
+    </form>
+  </div>
+
+  <script>
+    document.getElementById("signupForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const formData = new FormData(e.target);
+      const data = Object.fromEntries(formData.entries());
+
+      // Send data to backend (example using fetch)
+      const response = await fetch("http://localhost:5000/signup", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data)
+      });
+
+      if (response.ok) {
+        alert("Account created successfully!");
+        window.location.href = "login.html";
+      } else {
+        alert("Error signing up. Try again.");
+      }
+
+    });
+  </script>
+</body>
+</html>     
