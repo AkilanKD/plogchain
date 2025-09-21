@@ -27,4 +27,4 @@ for (const file of files) {
 
 // Step 3: Save merged GeoJSON
 const mergedGeoJSON = { type: "FeatureCollection", features: mergedFeatures };
-fs.writeFileSync("merged.geojson", JSON.stringify(mergedGeoJSON));
+fs.writeFileSync("water.geojson", JSON.stringify(mergedGeoJSON));
