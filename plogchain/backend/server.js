@@ -1,17 +1,27 @@
 import express, { json } from "express";
 import cors from "cors";
+// import { functionName } from './api/api.js';   
 
 const app = express();
 app.use(cors());
 app.use(json());
 
-// GET all trash spots
+// GET all cleanup spots
 app.get("/api/trash", async (req, res) => {
+  
   const result = await pool.query("SELECT * FROM trash_spots");
   res.json(result.rows);
 });
 
-// POST new trash report
+// GET nearby spots for cleanup
+app.get("/api/nearby", async (req, res) => {
+  
+
+});
+
+// POST new users
+
+// POST new cleanup report
 app.post("/api/trash/report", async (req, res) => {
   const { lat, lng, score } = req.body;
   await pool.query(
@@ -20,6 +30,11 @@ app.post("/api/trash/report", async (req, res) => {
   );
   res.json({ message: "Report added" });
 });
+
+// PUT new scores for existing cleanup spot?
+
+
+// 
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));

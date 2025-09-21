@@ -21,4 +21,4 @@ const SPOTS_POOL = new Pool({
   ssl: { rejectUnauthorized: false }
 });
 
-
+function
