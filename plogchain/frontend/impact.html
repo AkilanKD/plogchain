@@ -7,14 +7,14 @@
  body { margin: 0; font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; }
  body { font-family: Arial, sans-serif; text-align: center; margin: 0; padding: 20px; }
  #toolbar {
- position: fixed; z-index: 2; top: 70px; left: 12px; right: 12px;
+ position: fixed; z-index: 2; top: 90px; left: 12px; right: 12px;
  background: #ffffffee; backdrop-filter: blur(6px);
  border: 1px solid #ddd; border-radius: 10px; padding: 10px;
  display: grid; grid-template-columns: repeat(6, 1fr); gap: 10px; align-items: center;
  }
  #toolbar label { font-size: 12px; color: #333; }
  #toolbar input { width: 100%; padding: 6px 8px; border: 1px solid #ccc; border-radius: 6px; }
- #toolbar button { padding: 8px 10px; border: 0; border-radius: 8px; cursor: pointer; }
+ #toolbar button { padding: 8px 5px; border: 0; border-radius: 8px; cursor: pointer; }
  #map { height: 100vh; width: 100%; }
  #hint { font-size: 12px; color: #666; grid-column: span 6; }
  </style>
@@ -24,6 +24,13 @@
  <script type="module" src="https://pyscript.net/releases/2024.9.1/core.js"></script>
  </head>
  <body>
+      <nav class="nav">
+    <a href="./index.html">Home</a>
+    <a href="./destination.html">Destination</a>
+    <a href="./activity.html">Activity</a>
+    <a href="./impact.html">Impact</a>
+  </nav>
+  
  <h1>Impact</h1>
  <div id="toolbar">
  <label>Lat <input id="lat" type="number" step="0.000001" placeholder="37.782000"></label>
@@ -34,13 +41,7 @@
  <div id="hint">Tip: click on the map to auto-fill Lat/Lng. Points persist in your browser via localStorage.</div>
  </div>
  <div id="map"></div>
- <div id="out"></div>
 
- <py-script>
-from math import sqrt
-from pyscript import Element
-Element("out").write(f"sqrt(144) = {sqrt(144)}")
- </py-script>
 
  <script>
  // ---- Minimal “no-backend” data model ----
