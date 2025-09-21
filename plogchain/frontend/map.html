@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Complex Marker Icons</title>
+    <style>
+      gmp-map {
+        display: block;
+        height: 100vh;
+        width: 100%;
+      }
+      .flag-icon {
+        width: 32px;
+        height: 32px;
+      }
+    </style>
+  </head>
+  <body>
+    <gmp-map center="-33.9,151.2" zoom="10" map-id="DEMO_MAP_ID">
+      <gmp-advanced-marker position="-33.890542,151.274856" title="Bondi Beach">
+        <img class="flag-icon"
+             src="https://developers.google.com/maps/documentation/javascript/examples/full/images/beachflag.png"/>
+      </gmp-advanced-marker>
+      <gmp-advanced-marker position="-33.923036,151.259052" title="Coogee Beach">
+        <img class="flag-icon"
+             src="https://developers.google.com/maps/documentation/javascript/examples/full/images/beachflag.png"/>
+      </gmp-advanced-marker>
+    </gmp-map>
+
+    <script
+      src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAUDDUINaq-uc5lPTMb5ZnDeDQ0cZsy_hg
+&loading=async&libraries=marker&v=beta"
+      defer
+    ></script>
+  </body>
+</html>
