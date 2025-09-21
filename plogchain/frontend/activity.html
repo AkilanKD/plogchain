@@ -1,118 +1,56 @@
 <!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Activity</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      padding: 40px;
-    }
-    h1 {
-      text-align: center;
-    }
-    .upload-section {
-      display: flex;
-      justify-content: space-around;
-      margin-top: 30px;
-    }
-    .card {
-      border: 1px solid #180202;
-      padding: 20px;
-      text-align: center;
-      width: 45%;
-      box-shadow: 2px 2px 5px rgba(0,0,0,0.1);
-      border-radius: 10px;
-    }
-    .card img {
-      max-width: 100%;
-      margin-top: 10px;
-      border-radius: 5px;
-    }
-    
-    body {
-        background: linear-gradient(to right, #ffcccc, #66ccff);
-    }
+<html>
+  <head>
+    <title>Impact</title>
+    <script src="https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY&libraries=visualization"></script>
+    <style>
+      #map {
+        height: 100vh;
+        width: 100%;
+      }
+    </style>
+  </head>
+  <body>
+    <a href="../index.html">Homepage</a>
+    <h1>Impact</h1>
+    <div id="map"></div>
+    <script>
+      let map, heatmap;
 
-  </style>
-</head>
-<body>
+      async function initMap() {
+        map = new google.maps.Map(document.getElementById("map"), {
+          zoom: 13,
+          center: { lat: 37.7749, lng: -122.4194 }, // Example center
+          mapTypeId: "roadmap",
+        });
 
-  <h1>Activity</h1>
+        // Fetch dirtiness data from backend
+        const response = await fetch("http://localhost:5000/api/trash");
+        const spots = await response.json();
 
+        const trashData = spots.map((spot) => ({
+          location: new google.maps.LatLng(spot.lat, spot.lng),
+          weight: spot.score,
+        }));
 
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Time Selection</title>
-</head>
-<body>
-  <h2>Select Time</h2>
+        // Heatmap Layer
+        heatmap = new google.maps.visualization.HeatmapLayer({
+          data: trashData,
+          map: map,
+          radius: 40,
+          opacity: 0.7,
+        });
 
-  <label for="hour"></label>
-  <select id="hour"></select>
+        // Optional: custom color gradient
+        const gradient = [
+          "rgba(0, 255, 0, 0)",   // green (clean)
+          "rgba(255, 255, 0, 1)", // yellow (medium dirty)
+          "rgba(255, 0, 0, 1)"    // red (very dirty)
+        ];
+        heatmap.set("gradient", gradient);
+      }
 
-  <label for="minute">:</label>
-  <select id="minute"></select>
-   
- 
-
-  <script>
-    const hourSelect = document.getElementById("hour");
-    const minuteSelect = document.getElementById("minute");
-
-    // Populate hours 1~24
-    for (let i = 1; i <= 24; i++) {
-      const option = document.createElement("option");
-      option.value = i;
-      option.text = i;
-      hourSelect.appendChild(option);
-    }
-
-    // Populate minutes 0~59
-    for (let i = 0; i <= 59; i++) {
-      const option = document.createElement("option");
-      option.value = i;
-      option.text = i.toString().padStart(2, '0'); // display 00,01,02...
-      minuteSelect.appendChild(option);
-    }
-  </script>
-</body>
-</html>
-
-
-  <div class="upload-section">
-    
-    <!-- Pre-picture -->
-    <div class="card">
-      <h2>Pre-picture</h2>
-      <input type="file" accept="image/*" id="preImage" onchange="previewImage(event, 'prePreview')">
-      <img id="prePreview" src="#" alt="Pre-picture preview" style="display:none;">
-      
-    </div>
-
-    <!-- Post-picture -->
-    <div class="card">
-      <h2>Post-picture</h2>
-      <input type="file" accept="image/*" id="postImage" onchange="previewImage(event, 'postPreview')">
-      <img id="postPreview" src="#" alt="Post-picture preview" style="display:none;">
-    </div>
-  </div>
-
-  <script>
-    function previewImage(event, previewId) {
-      const reader = new FileReader();
-      reader.onload = function() {
-        const output = document.getElementById(previewId);
-        output.src = reader.result;
-        output.style.display = "block";
-      };
-      reader.readAsDataURL(event.target.files[0]);
-    }
-  </script>
-
-</body>
+      window.onload = initMap;
+    </script>
+  </body>
 </html>
