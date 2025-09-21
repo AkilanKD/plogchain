@@ -1,18 +1,108 @@
 <!DOCTYPE html>
-<html>
-  <head>
-    <title>Destination</title>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ocean Cleanup Assignment</title>
+  <style>
+    body { font-family: Arial, sans-serif; text-align: center; margin: 0; padding: 20px; }
+    #map { height: 500px; width: 100%; margin-top: 20px; }
+    input { padding: 8px; width: 250px; }
+    button { padding: 8px 15px; margin-left: 5px; }
+  </style>
+</head>
+<body>
+    <nav class="nav">
+      <a href="./index.html">Home</a>
+      <a href="./destination.html">Destination</a>
+      <a href="./activity.html">Activity</a>
+      <a href="./impact.html">Impact</a>
+  </nav>
 
-    <body>
-        <nav class="nav">
-                <a href="./index.html">Home</a>
-                <a href="./destination.html">Destination</a>
-                <a href="./activity.html">Activity</a>
-                <a href="./impact.html">Impact</a>
-            </nav>
+  <h2>Join Ocean Cleanup 🌊</h2>
+  <p>Enter your state or city, and we’ll assign you a beach to clean.</p>
 
-        <h1>Destination</h1>
-    </body>
+  <input type="text" id="location" placeholder="Enter your state or city">
+  <button onclick="assignBeach()">Find My Beach</button>
 
+  <h3 id="result"></h3>
+  <div id="map"></div>
 
-    
+  <script>
+    let map;
+
+    // Hardcoded beaches with states/cities
+    const beaches = [
+      { name: "Kamilo Beach (Hawaii)", lat: 19.084, lng: -155.649, states: ["hawaii"] },
+      { name: "Santa Monica Beach (California)", lat: 34.010, lng: -118.496, states: ["california"] },
+      { name: "Venice Beach (California)", lat: 33.985, lng: -118.469, states: ["california"] },
+      { name: "Imperial Beach (California)", lat: 32.5783, lng: -117.1179, states: ["california"] },
+      { name: "Coney Island Beach (New York)", lat: 40.5749, lng: -73.9850, states: ["new york"] },
+      { name: "Newport Beach (California)", lat: 33.6189, lng: -117.9298, states: ["california"] },
+      { name: "Pompano Beach (Florida)", lat: 26.2403, lng: -80.1102, states: ["florida"] }
+    ];
+
+    // Initialize map centered on US
+    function initMap(center = { lat: 38.9, lng: -98.03 }) {
+      map = new google.maps.Map(document.getElementById("map"), {
+        center,
+        zoom: 3.5
+      });
+
+      // Add all beach markers
+      beaches.forEach(b => {
+        new google.maps.Marker({
+          position: { lat: b.lat, lng: b.lng },
+          map,
+          title: b.name,
+          icon: "https://developers.google.com/maps/documentation/javascript/examples/full/images/beachflag.png"
+        });
+      });
+    }
+
+    function assignBeach() {
+      const input = document.getElementById("location").value.trim().toLowerCase();
+      if (!input) return alert("Please enter a location.");
+
+      // Look up the first matching beach
+      let assigned = null;
+      for (const b of beaches) {
+        if (b.states.includes(input)) {
+          assigned = b;
+          break;
+        }
+      }
+
+      if (!assigned) {
+        document.getElementById("result").innerText =
+          "❌ Sorry, we don't have a beach in that location yet.";
+        return;
+      }
+
+      // Friendly sentence for the user
+      document.getElementById("result").innerText =
+        `🌍 The closest beach you can clean up is ${assigned.name} @ 11:00 - 13:00 🌊`;
+
+      // Re-center map on assigned beach
+      initMap({ lat: assigned.lat, lng: assigned.lng });
+
+      // Add marker for assigned beach
+      new google.maps.Marker({
+        position: { lat: assigned.lat, lng: assigned.lng },
+        map,
+        title: `Assigned Cleanup: ${Florida}`,
+        icon: "http://maps.google.com/mapfiles/ms/icons/green-dot.png"
+      });
+    }
+
+    // Make initMap global
+    window.initMap = initMap;
+  </script>
+
+  <!-- Load Google Maps API -->
+  <script async
+    src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAUDDUINaq-uc5lPTMb5ZnDeDQ0cZsy_hg
+&callback=initMap">
+  </script>
+</body>
+</html>

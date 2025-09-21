@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Activity</title>
   <style>
+    body { font-family: Arial, sans-serif; text-align: center; margin: 0; padding: 20px; }
     .upload-section {
       display: flex;
       justify-content: space-around;
@@ -23,94 +24,87 @@
       margin-top: 10px;
       border-radius: 5px;
     }
-    
-    
-    
-
+    .status {
+      display: none;
+      margin-top: 8px;
+      font-weight: bold;
+    }
+    .success { color: green; }
+    .error { color: red; }
   </style>
 </head>
+
 <body>
-    <nav class="nav">
-                <a href="./index.html">Home</a>
-                <a href="./destination.html">Destination</a>
-                <a href="./activity.html">Activity</a>
-                <a href="./impact.html">Impact</a>
-            </nav>
+  <nav class="nav">
+    <a href="./index.html">Home</a>
+    <a href="./destination.html">Destination</a>
+    <a href="./activity.html">Activity</a>
+    <a href="./impact.html">Impact</a>
+  </nav>
 
   <h1>Activity</h1>
 
+  <!--The div element for the map -->
+    <div id="map"></div>
 
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Time Selection</title>
-</head>
-<body>
-  <h2>Select Time</h2>
-
-  <label for="hour"></label>
-  <select id="hour"></select>
-
-  <label for="minute">:</label>
-  <select id="minute"></select>
-   
- 
-
-  <script>
-    const hourSelect = document.getElementById("hour");
-    const minuteSelect = document.getElementById("minute");
-
-    // Populate hours 1~24
-    for (let i = 1; i <= 24; i++) {
-      const option = document.createElement("option");
-      option.value = i;
-      option.text = i;
-      hourSelect.appendChild(option);
-    }
-
-    // Populate minutes 0~59
-    for (let i = 0; i <= 59; i++) {
-      const option = document.createElement("option");
-      option.value = i;
-      option.text = i.toString().padStart(2, '0'); // display 00,01,02...
-      minuteSelect.appendChild(option);
-    }
-  </script>
-</body>
-</html>
-
+    <!-- prettier-ignore -->
+    <script>(g=>{var h,a,k,p="The Google Maps JavaScript API",c="google",l="importLibrary",q="__ib__",m=document,b=window;b=b[c]||(b[c]={});var d=b.maps||(b.maps={}),r=new Set,e=new URLSearchParams,u=()=>h||(h=new Promise(async(f,n)=>{await (a=m.createElement("script"));e.set("libraries",[...r]+"");for(k in g)e.set(k.replace(/[A-Z]/g,t=>"_"+t[0].toLowerCase()),g[k]);e.set("callback",c+".maps."+q);a.src=`https://maps.${
+    c}apis.com/maps/api/js?`+e;d[q]=f;a.onerror=()=>h=n(Error(p+" could not load."));a.nonce=m.querySelector("script[nonce]")?.nonce||"";m.head.append(a)}));d[l]?console.warn(p+" only loads once. Ignoring:",g):d[l]=(f,...n)=>r.add(f)&&u().then(()=>d[l](f,...n))})
+        ({key: "AIzaSyAUDDUINaq-uc5lPTMb5ZnDeDQ0cZsy_hg", v: "weekly"});</script>
 
   <div class="upload-section">
-    
     <!-- Pre-picture -->
     <div class="card">
       <h2>Pre-picture</h2>
-      <input type="file" accept="image/*" id="preImage" onchange="previewImage(event, 'prePreview')">
+      <input type="file" accept="image/*" id="preImage" onchange="handleUpload(event, 'prePreview', 'preStatus')">
       <img id="prePreview" src="#" alt="Pre-picture preview" style="display:none;">
-      
+      <p id="preStatus" class="status"></p>
     </div>
 
     <!-- Post-picture -->
     <div class="card">
       <h2>Post-picture</h2>
-      <input type="file" accept="image/*" id="postImage" onchange="previewImage(event, 'postPreview')">
+      <input type="file" accept="image/*" id="postImage" onchange="handleUpload(event, 'postPreview', 'postStatus')">
       <img id="postPreview" src="#" alt="Post-picture preview" style="display:none;">
+      <p id="postStatus" class="status"></p>
     </div>
   </div>
 
   <script>
-    function previewImage(event, previewId) {
-      const reader = new FileReader();
-      reader.onload = function() {
-        const output = document.getElementById(previewId);
-        output.src = reader.result;
-        output.style.display = "block";
-      };
-      reader.readAsDataURL(event.target.files[0]);
+    function handleUpload(event, previewId, statusId) {
+      const file = event.target.files[0];
+      const preview = document.getElementById(previewId);
+      const status = document.getElementById(statusId);
+
+      if (!file) return;
+
+      // Reset status
+      status.style.display = "block";
+      status.textContent = "Uploading...";
+      status.className = "status";
+
+      // Fake upload simulation (2 sec)
+      setTimeout(() => {
+        const success = Math.random() > 0.3; // 70% chance success, 30% fail
+        if (success) {
+          const reader = new FileReader();
+          reader.onload = function() {
+            preview.src = reader.result;
+            preview.style.display = "block";
+          };
+          reader.readAsDataURL(file);
+
+          status.textContent = "✅ Upload complete!";
+          status.classList.add("success");
+        } else {
+          preview.style.display = "none";
+          status.textContent = "❌ Upload failed!";
+          status.classList.add("error");
+        }
+      }, 2000);
     }
   </script>
+  
 
 </body>
 </html>

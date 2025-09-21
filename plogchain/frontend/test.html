@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Complex Marker Icons</title>
+    <style>
+      gmp-map {
+        display: block;
+        height: 500px;   /* Set map height */
+        width: 100%;     /* Full width */
+      }
+      .flag-icon {
+        width: 30px;
+        height: 30px;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Map centered on Maroubra Beach -->
+    <gmp-map center="-33.950198,151.259302" zoom="14" map-id="DEMO_MAP_ID">
+      <gmp-advanced-marker position="-33.950198,151.259302" title="Maroubra Beach">
+        <img class="flag-icon"
+             src="https://developers.google.com/maps/documentation/javascript/examples/full/images/beachflag.png"/>
+      </gmp-advanced-marker>
+    </gmp-map>
+
+    <script
+      src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAUDDUINaq-uc5lPTMb5ZnDeDQ0cZsy_hg
+&loading=async&libraries=marker&v=beta"
+      defer
+    ></script>
+  </body>
+</html>

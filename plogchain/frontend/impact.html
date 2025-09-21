@@ -1,102 +1,145 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <title>Impact</title>
-    <style>
-      /* Make map fill the screen */
-      #map {
-        height: 100vh;
-        width: 100%;
-      }
-    </style>
-    <!-- Load Google Maps API (replace YOUR_API_KEY) -->
-    <script src="https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY"></script>
-  </head>
-  <body>
-    <nav class="nav">
-                <a href="./index.html">Home</a>
-                <a href="./destination.html">Destination</a>
-                <a href="./activity.html">Activity</a>
-                <a href="./impact.html">Impact</a>
-            </nav>
+ <head>
+ <meta charset="utf-8" />
+ <title>Impact</title>
+ <style>
+ body { margin: 0; font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; }
+ body { font-family: Arial, sans-serif; text-align: center; margin: 0; padding: 20px; }
+ #toolbar {
+ position: fixed; z-index: 2; top: 70px; left: 12px; right: 12px;
+ background: #ffffffee; backdrop-filter: blur(6px);
+ border: 1px solid #ddd; border-radius: 10px; padding: 10px;
+ display: grid; grid-template-columns: repeat(6, 1fr); gap: 10px; align-items: center;
+ }
+ #toolbar label { font-size: 12px; color: #333; }
+ #toolbar input { width: 100%; padding: 6px 8px; border: 1px solid #ccc; border-radius: 6px; }
+ #toolbar button { padding: 8px 10px; border: 0; border-radius: 8px; cursor: pointer; }
+ #map { height: 100vh; width: 100%; }
+ #hint { font-size: 12px; color: #666; grid-column: span 6; }
+ </style>
+ <!-- Add &libraries=visualization for HeatmapLayer -->
+ <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAUDDUINaq-uc5lPTMb5ZnDeDQ0cZsy_hg
+&libraries=visualization&callback=initMap" async defer></script>
+ <script type="module" src="https://pyscript.net/releases/2024.9.1/core.js"></script>
+ </head>
+ <body>
+ <h1>Impact</h1>
+ <div id="toolbar">
+ <label>Lat <input id="lat" type="number" step="0.000001" placeholder="37.782000"></label>
+ <label>Lng <input id="lng" type="number" step="0.000001" placeholder="-122.447000"></label>
+ <label>Score (1–10) <input id="score" type="number" min="1" max="10" value="5"></label>
+ <button id="add">Add point</button>
+ <button id="clear">Clear local data</button>
+ <div id="hint">Tip: click on the map to auto-fill Lat/Lng. Points persist in your browser via localStorage.</div>
+ </div>
+ <div id="map"></div>
+ <div id="out"></div>
 
-    <h1>Impact</h1>
-    <div id="map"></div>
+ <py-script>
+from math import sqrt
+from pyscript import Element
+Element("out").write(f"sqrt(144) = {sqrt(144)}")
+ </py-script>
 
-    <script>
-      // Map status → color mapping
-      const statusColors = {
-        clean: "#00FF00",        // green
-        dirty: "#FF0000",        // red
-        "in-progress": "#FFFF00" // yellow
-      };
+ <script>
+ // ---- Minimal “no-backend” data model ----
+ const LS_KEY = "trash_spots_v1";
 
-      function initMap() {
-        // Create map centered on example area
-        const map = new google.maps.Map(document.getElementById("map"), {
-          center: { lat: 37.782, lng: -122.447 },
-          zoom: 15,
-        });
+ // Seed points (only used first time; afterwards we load from localStorage)
+ const SEED = [
+ { lat: 37.782, lng: -122.447, score: 2 },
+ { lat: 37.782, lng: -122.445, score: 5 },
+ { lat: 37.781, lng: -122.446, score: 8 },
+ ];
 
-        // Define bounding box for coastline section
-        const north = 37.785;
-        const south = 37.780;
-        const east = -122.443;
-        const west = -122.450;
+ function loadPoints() {
+ try {
+ const raw = localStorage.getItem(LS_KEY);
+ if (!raw) return SEED.slice();
+ const arr = JSON.parse(raw);
+ return Array.isArray(arr) ? arr : SEED.slice();
+ } catch {
+ return SEED.slice();
+ }
+ }
+ function savePoints(arr) {
+ localStorage.setItem(LS_KEY, JSON.stringify(arr));
+ }
 
-        const latStep = 0.001; // about 111m
-        const lngStep = 0.001; // about 85m
+ // ---- Google Maps + Heatmap ----
+ let map, heatmap;
+ function normalizeScore(score, min=1, max=10) {
+ // Google heatmap weights work best small-ish; map 1–10 -> 0.5–5
+ const s = Math.max(min, Math.min(max, Number(score) || 1));
+ return 0.5 + (s - min) * (4.5 / (max - min));
+ }
 
-        // Fetch status data from backend
-        fetch("https://your-backend.onrender.com/api/grid-status")
-          .then((res) => res.json())
-          .then((data) => {
-            const statusLookup = {};
-            data.forEach((cell) => {
-              statusLookup[`${cell.lat.toFixed(3)},${cell.lng.toFixed(3)}`] = cell.status;
-            });
+ function rebuildHeatmap(spots) {
+ const points = spots.map(s => ({
+ location: new google.maps.LatLng(Number(s.lat), Number(s.lng)),
+ weight: normalizeScore(s.score)
+ }));
+ if (!heatmap) {
+ heatmap = new google.maps.visualization.HeatmapLayer({
+ data: points,
+ map,
+ radius: 40,
+ opacity: 0.8,
+ });
+ // Optional: custom gradient (green→yellow→red)
+ const gradient = [
+ "rgba(0,255,0,0)", "rgba(0,255,0,1)",
+ "rgba(255,255,0,1)", "rgba(255,165,0,1)",
+ "rgba(255,0,0,1)"
+ ];
+ heatmap.set("gradient", gradient);
+ } else {
+ heatmap.setData(points);
+ }
+ }
 
-            // Draw the grid
-            for (let lat = south; lat < north; lat += latStep) {
-              for (let lng = west; lng < east; lng += lngStep) {
-                const bounds = {
-                  north: lat + latStep,
-                  south: lat,
-                  east: lng + lngStep,
-                  west: lng,
-                };
+ window.initMap = function initMap() {
+ map = new google.maps.Map(document.getElementById("map"), {
+ center: { lat: 37.782, lng: -122.447 },
+ zoom: 14,
+ mapTypeId: "roadmap",
+ });
 
-                const status = statusLookup[`${lat.toFixed(3)},${lng.toFixed(3)}`] || "clean";
-                const fillColor = statusColors[status];
+ // Load and render initial data
+ const spots = loadPoints();
+ rebuildHeatmap(spots);
 
-                const rectangle = new google.maps.Rectangle({
-                  strokeColor: "#000000",
-                  strokeOpacity: 0.4,
-                  strokeWeight: 1,
-                  fillColor: fillColor,
-                  fillOpacity: 0.4,
-                  map: map,
-                  bounds: bounds,
-                });
+ // Click to prefill lat/lng
+ map.addListener("click", (e) => {
+ document.getElementById("lat").value = e.latLng.lat().toFixed(6);
+ document.getElementById("lng").value = e.latLng.lng().toFixed(6);
+ });
 
-                // Click handler to update/claim the cell
-                rectangle.addListener("click", () => {
-                  alert(`Clicked cell at Lat: ${lat.toFixed(3)}, Lng: ${lng.toFixed(3)}\nStatus: ${status}`);
+ // Add point
+ document.getElementById("add").addEventListener("click", () => {
+ const lat = parseFloat(document.getElementById("lat").value);
+ const lng = parseFloat(document.getElementById("lng").value);
+ const score = parseInt(document.getElementById("score").value, 10);
 
-                  // Example: send update to backend
-                  // fetch("https://your-backend.onrender.com/api/update-cell", {
-                  //   method: "POST",
-                  //   headers: { "Content-Type": "application/json" },
-                  //   body: JSON.stringify({ lat: lat.toFixed(3), lng: lng.toFixed(3), status: "in-progress" })
-                  // });
-                });
-              }
-            }
-          });
-      }
+ if (!isFinite(lat) || !isFinite(lng)) {
+ alert("Please enter valid latitude and longitude (or click the map).");
+ return;
+ }
+ const next = loadPoints();
+ next.push({ lat, lng, score: isFinite(score) ? score : 5 });
+ savePoints(next);
+ rebuildHeatmap(next);
+ });
 
-      // Initialize map after window loads
-      window.onload = initMap;
-    </script>
-  </body>
+ // Clear local data (revert to seed)
+ document.getElementById("clear").addEventListener("click", () => {
+ localStorage.removeItem(LS_KEY);
+ const base = loadPoints();
+ rebuildHeatmap(base);
+ });
+ };
+ </script>
+ 
+ </body>
 </html>

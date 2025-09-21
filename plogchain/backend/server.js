@@ -11,6 +11,23 @@ app.get("/api/trash", async (req, res) => {
   res.json(result.rows);
 });
 
+// post New user code
+app.post("/users", async (req, res) => {
+  const { name, email, password } = req.body; // Get data from form
+
+  try {
+    // Insert into Users table
+    const result = await pool.query(
+      "INSERT INTO users (name, email, password) VALUES ($1, $2, $3) RETURNING *",
+      [name, email, password]
+    );
+    res.json({ success: true, user: result.rows[0] }); // Send back confirmation
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ success: false, message: "Error creating user" });
+  }
+});
+
 // POST new trash report
 app.post("/api/trash/report", async (req, res) => {
   const { lat, lng, score } = req.body;
