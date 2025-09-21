@@ -1,31 +1,9 @@
 import express, { json } from "express";
 import cors from "cors";
-import { Pool } from "pg";
 
 const app = express();
 app.use(cors());
 app.use(json());
-
-// Connect to Render Postgres using the DATABASE_URL environment variable
-const cleanups_pool = new Pool({
-  connectionString: process.env.CLEANUPS_DB_URL,
-  ssl: { rejectUnauthorized: false }
-});
-
-const users_pool = new Pool({
-  connectionString: process.env.USERS_DB_URL,
-  ssl: { rejectUnauthorized: false }
-});
-
-const reports_pool = new Pool({
-  connectionString: process.env.REPORTS_DB_URL,
-  ssl: { rejectUnauthorized: false }
-});
-
-const spots_pool = new Pool({
-  connectionString: process.env.SPOTS_DB_URL,
-  ssl: { rejectUnauthorized: false }
-});
 
 // GET all trash spots
 app.get("/api/trash", async (req, res) => {
