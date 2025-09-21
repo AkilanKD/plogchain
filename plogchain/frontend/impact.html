@@ -1,103 +1,102 @@
-<!doctype html>
+<!DOCTYPE html>
 <html>
   <head>
-    <meta charset="utf-8" />
-    <title>Google Heatmap Demo</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Impact</title>
     <style>
-      html, body, #map { height: 100%; margin: 0; }
-      .controls { position:absolute; z-index:10; top:10px; left:10px; background:#fff; padding:8px 10px; border-radius:8px; font:14px system-ui; box-shadow:0 4px 12px rgba(0,0,0,.15);}
-      .controls button { margin-right:6px; }
+      /* Make map fill the screen */
+      #map {
+        height: 100vh;
+        width: 100%;
+      }
     </style>
-    <script>
-      let map, heatmap;
-
-      async function initMap() {
-        // 1) Create map
-        map = new google.maps.Map(document.getElementById("map"), {
-          center: { lat: 37.7749, lng: -122.4194 }, // start center
-          zoom: 12,
-          mapTypeId: "roadmap",
-        });
-
-        // 2) Load data (choose A or B below)
-
-        // A) Static demo points (array of LatLngs or {location, weight})
-        // const points = [
-        //   new google.maps.LatLng(37.7749, -122.4194),
-        //   { location: new google.maps.LatLng(37.7694, -122.4862), weight: 2 },
-        //   new google.maps.LatLng(37.8079, -122.4177),
-        // ];
-
-        // B) From your backend (expects [{lat,lng,level}])
-        const res = await fetch("http://localhost:5000/api/trash");
-        const raw = await res.json();
-        const points = raw.map(s =>
-          s.level != null
-            ? { location: new google.maps.LatLng(s.lat, s.lng), weight: s.level + 1 } // weight 1..3
-            : new google.maps.LatLng(s.lat, s.lng)
-        );
-
-        // 3) Create heatmap layer
-        heatmap = new google.maps.visualization.HeatmapLayer({
-          data: points,
-          dissipating: true,     // true = radius scales with zoom (good for city-level)
-          radius: 24,            // tweak for your zoom range (in pixels)
-          opacity: 0.7,
-        });
-        heatmap.setMap(map);
-
-        // Optional: fit map to your data
-        if (points.length) {
-          const bounds = new google.maps.LatLngBounds();
-          points.forEach(p => bounds.extend(p.location || p));
-          map.fitBounds(bounds);
-        }
-      }
-
-      // UI controls
-      function toggleHeatmap() {
-        heatmap.setMap(heatmap.getMap() ? null : map);
-      }
-      function changeGradient() {
-        const gradient = [
-          "rgba(0, 255, 255, 0)",
-          "rgba(0, 255, 255, 1)",
-          "rgba(0, 191, 255, 1)",
-          "rgba(0, 127, 255, 1)",
-          "rgba(0, 63, 255, 1)",
-          "rgba(0, 0, 255, 1)",
-          "rgba(0, 0, 223, 1)",
-          "rgba(0, 0, 191, 1)",
-          "rgba(0, 0, 159, 1)",
-          "rgba(0, 0, 127, 1)",
-          "rgba(63, 0, 91, 1)",
-          "rgba(127, 0, 63, 1)",
-          "rgba(191, 0, 31, 1)",
-          "rgba(255, 0, 0, 1)",
-        ];
-        heatmap.set("gradient", heatmap.get("gradient") ? null : gradient);
-      }
-      function changeRadius() {
-        heatmap.set("radius", heatmap.get("radius") ? null : 24);
-      }
-      function changeOpacity() {
-        heatmap.set("opacity", heatmap.get("opacity") === 0.7 ? 0.4 : 0.7);
-      }
-    </script>
+    <!-- Load Google Maps API (replace YOUR_API_KEY) -->
+    <script src="https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY"></script>
   </head>
   <body>
-    <div class="controls">
-      <button onclick="toggleHeatmap()">Toggle</button>
-      <button onclick="changeGradient()">Gradient</button>
-      <button onclick="changeRadius()">Radius</button>
-      <button onclick="changeOpacity()">Opacity</button>
-    </div>
+    <nav class="nav">
+                <a href="./index.html">Home</a>
+                <a href="./destination.html">Destination</a>
+                <a href="./activity.html">Activity</a>
+                <a href="./impact.html">Impact</a>
+            </nav>
+
+    <h1>Impact</h1>
     <div id="map"></div>
 
-    <!-- Load Maps JS with the visualization library and your API key -->
-    <script async defer
-      src="https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY&libraries=visualization&callback=initMap">
+    <script>
+      // Map status → color mapping
+      const statusColors = {
+        clean: "#00FF00",        // green
+        dirty: "#FF0000",        // red
+        "in-progress": "#FFFF00" // yellow
+      };
+
+      function initMap() {
+        // Create map centered on example area
+        const map = new google.maps.Map(document.getElementById("map"), {
+          center: { lat: 37.782, lng: -122.447 },
+          zoom: 15,
+        });
+
+        // Define bounding box for coastline section
+        const north = 37.785;
+        const south = 37.780;
+        const east = -122.443;
+        const west = -122.450;
+
+        const latStep = 0.001; // about 111m
+        const lngStep = 0.001; // about 85m
+
+        // Fetch status data from backend
+        fetch("https://your-backend.onrender.com/api/grid-status")
+          .then((res) => res.json())
+          .then((data) => {
+            const statusLookup = {};
+            data.forEach((cell) => {
+              statusLookup[`${cell.lat.toFixed(3)},${cell.lng.toFixed(3)}`] = cell.status;
+            });
+
+            // Draw the grid
+            for (let lat = south; lat < north; lat += latStep) {
+              for (let lng = west; lng < east; lng += lngStep) {
+                const bounds = {
+                  north: lat + latStep,
+                  south: lat,
+                  east: lng + lngStep,
+                  west: lng,
+                };
+
+                const status = statusLookup[`${lat.toFixed(3)},${lng.toFixed(3)}`] || "clean";
+                const fillColor = statusColors[status];
+
+                const rectangle = new google.maps.Rectangle({
+                  strokeColor: "#000000",
+                  strokeOpacity: 0.4,
+                  strokeWeight: 1,
+                  fillColor: fillColor,
+                  fillOpacity: 0.4,
+                  map: map,
+                  bounds: bounds,
+                });
+
+                // Click handler to update/claim the cell
+                rectangle.addListener("click", () => {
+                  alert(`Clicked cell at Lat: ${lat.toFixed(3)}, Lng: ${lng.toFixed(3)}\nStatus: ${status}`);
+
+                  // Example: send update to backend
+                  // fetch("https://your-backend.onrender.com/api/update-cell", {
+                  //   method: "POST",
+                  //   headers: { "Content-Type": "application/json" },
+                  //   body: JSON.stringify({ lat: lat.toFixed(3), lng: lng.toFixed(3), status: "in-progress" })
+                  // });
+                });
+              }
+            }
+          });
+      }
+
+      // Initialize map after window loads
+      window.onload = initMap;
     </script>
   </body>
 </html>
