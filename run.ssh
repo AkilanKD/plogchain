@@ -1,0 +1,5 @@
+cd "plogchain/backend"
+npm install
+cd "../frontend"
+open ./index.html
+man open

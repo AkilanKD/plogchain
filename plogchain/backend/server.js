@@ -1,12 +1,6 @@
 import express, { json } from "express";
 import cors from "cors";
-import {CLEANUPS_POOL, REPORTS_POOL, SPOTS_POOL, USERS_POOL} from "api/api.js";
-
-// Connect to Render Postgres using the DATABASE_URL environment variable
-const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
-  ssl: { rejectUnauthorized: false }
-});
+import { CLEANUPS_POOL, REPORTS_POOL, SPOTS_POOL, USERS_POOL } from "api/api.js";
 
 const app = express();
 app.use(cors());
